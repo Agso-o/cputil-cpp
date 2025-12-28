@@ -29,14 +29,14 @@ show_help() {
     echo "Options:"
     echo "  -h               Show this help message"
     echo "  -g <file>        Use a custom generator file (overrides internal generator)"
-    echo "  -l <num> <num>   Define limits of the generated values (e.g. \"1 100\")"
-    echo "  -t <num>         Set the number of test cases (T inside the file)"
+    echo "  -l "<num> <num>"   Define limits of the generated values [default = "1 100"]"
+    echo "  -t <num>         Set the number of test cases (T inside the file) [default = 1]"
     echo "  -r <num>         Set the number of stress rounds (How many times to run)"
     echo "  -i <num>         Set how many numbers will be generated per line [default = 1]"
     echo "  -s               Show time taken to run both solutions"
     echo ""
     echo "Exemple:"
-    echo "  cputil -r 100 -t 1 -g my_generator.cpp solution.cpp brute.cpp"
+    echo "  cputil -l "1 1e6" -r 100 -t 1 -g my_generator.cpp solution.cpp brute.cpp"
     exit 0
 }
 
