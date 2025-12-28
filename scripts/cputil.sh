@@ -18,27 +18,12 @@ fi
 # Defalt settings
 LIMITS="1 100"
 NUM_TESTS=1      
-STRESS_ROUNDS=1 
+STRESS_ROUNDS=100 
 NUM_PER_LINE=1
 SHOW_TIME=false
 CUSTOM_GENERATOR="" 
-
-show_help() {
-    echo "cputil: A simple tool to test your problems solutions"
-    echo "Usage: cputil [options] <test-solution> <bruteforce-solution>"
-    echo "Options:"
-    echo "  -h               Show this help message"
-    echo "  -g <file>        Use a custom generator file (overrides internal generator)"
-    echo "  -l <num> <num>   Define limits of the generated values [default = "1 100"]"
-    echo "  -t <num>         Set the number of test cases (T inside the file) [default = 1]"
-    echo "  -r <num>         Set the number of stress rounds (How many times to run)"
-    echo "  -i <num>         Set how many numbers will be generated per line [default = 1]"
-    echo "  -s               Show time taken to run both solutions"
-    echo ""
-    echo "Exemple:"
-    echo "  cputil -l "1 1e6" -r 100 -t 1 -g my_generator.cpp solution.cpp brute.cpp"
-    exit 0
-}
+CXX="g++"
+CXXFLAGS="-O2 -std=c++17"
 
 # Load defaults from config file
 config_file=~/.cputilrc
@@ -46,25 +31,83 @@ if [ -f "$config_file" ]; then
     source "$config_file"
 fi
 
-while getopts "hg:l:t:r:i:s" opt; do
+show_help() {
+    echo "cputil: A simple tool to help you with competitive programming"
+    echo "Usage: cputil [options] <files>"
+    echo "Options:"
+    echo "  -h               Show this help message"
+    echo "  -c               Compile and run a cpp file"
+    echo "  -l <num> <num>   Define limits of the generated values [default = "1 100"]"
+    echo "  -r <num>         Set the number of stress rounds (How many times to run)"
+    echo "  -t <num>         Set the number of test cases (T inside the file) [default = 1]"
+    echo "  -i <num>         Set how many numbers will be generated per line [default = 1]"
+    echo "  -g <file>        Use a custom generator file (overrides internal generator)"
+    echo "  -s               Show time taken to run both solutions"
+    echo ""
+    echo "Exemple:"
+    echo "  cputil -l "1 400" -r 100 -t 1 -g my_generator.cpp solution.cpp brute.cpp"
+    exit 0
+}
+
+compile_file() {
+    local source_file=$1
+    local output_bin=$2
+    
+    echo -n "Compiling $source_file... "
+    
+    $CXX $CXXFLAGS "$source_file" -o "$output_bin"
+    
+    if [ $? -eq 0 ]; then
+        echo -e "\033[0;32mOK\033[0m" 
+    else
+        echo -e "\033[0;31mFALHA\033[0m" 
+        echo "Error compiling $source_file. Verify the code."
+        exit 1
+    fi
+}
+
+compile_and_run() {
+    local source_file=$1
+    local out_name="${source_file%.*}"
+    echo "Compiling..."
+
+    $CXX $CXXFLAGS "$source_file" -o "$out_name"
+    
+    local compile_status=$?
+    if [ $compile_status -ne 0 ]; then
+        echo ">> Failed to compile"
+        exit 1
+    fi
+    echo ">> Executing..."
+    ./$out_name
+
+    exit 1
+}
+
+
+
+while getopts "hc:l:r:t:i:g:s" opt; do
     case $opt in
         h) 
             show_help 
             ;;
-        g)
-            CUSTOM_GENERATOR=$OPTARG
+        c)
+            compile_and_run "$OPTARG"
             ;;
         l) 
             LIMITS=$OPTARG 
             ;;
-        t) 
-            NUM_TESTS=$OPTARG 
-            ;;
         r)
             STRESS_ROUNDS=$OPTARG
             ;;
+        t) 
+            NUM_TESTS=$OPTARG 
+            ;;
         i) 
             NUM_PER_LINE=$OPTARG 
+            ;;
+        g)
+            CUSTOM_GENERATOR=$OPTARG
             ;;
         s) 
             SHOW_TIME=true 
@@ -120,25 +163,7 @@ echo "Rounds:   $STRESS_ROUNDS"
 echo "Timing:   $SHOW_TIME"
 echo "--------------------------"
 
-CXX="g++"
-CXXFLAGS="-O2 -std=c++17"
 
-compile_file() {
-    local source_file=$1
-    local output_bin=$2
-    
-    echo -n "Compiling $source_file... "
-    
-    $CXX $CXXFLAGS "$source_file" -o "$output_bin"
-    
-    if [ $? -eq 0 ]; then
-        echo -e "\033[0;32mOK\033[0m" 
-    else
-        echo -e "\033[0;31mFALHA\033[0m" 
-        echo "Erro ao compilar $source_file. Verifique o código."
-        exit 1
-    fi
-}
 # Names of the binaries
 BIN_SOL="./.bin_sol"
 BIN_BRUTE="./.bin_brute"
