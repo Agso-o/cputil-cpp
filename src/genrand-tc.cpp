@@ -1,14 +1,14 @@
 #include <cstdlib>
-#include<iostream>
-#include<sstream>
+#include <iostream>
+#include <sstream>
 #include <utility>
 
 // This program can generate random values for stress testing problems solutions 
 
 // This function Generate random values in a certain range
-int gen_rand_in_range(int a, int b){
+long long gen_rand_in_range(long long a, long long b){
     if(a > b) std::swap(a, b);
-    int value = a + rand() % (b - a + 1);
+    long long value = a + rand() % (b - a + 1);
     return value;
 }
 
@@ -21,13 +21,13 @@ int gen_rand_in_range(int a, int b){
 int main(int argc, char* argv[]){
     srand(atoi(argv[1]));
 
-    int t = atoi(argv[2]);
-    int min, max;
+    long long t = atoi(argv[2]);
+    long long min, max;
     std::stringstream ss(argv[3]);
     ss >> min >> max;
-    int n = atoi(argv[4]);
-    for(int i = 0; i < t; i++){
-        for(int i = 0; i < n; i++){
+    long long n = atoi(argv[4]);
+    for(long long i = 0; i < t; i++){
+        for(long long i = 0; i < n; i++){
             std::cout << gen_rand_in_range(min, max) << " ";    
         }
         std::cout << "\n";
