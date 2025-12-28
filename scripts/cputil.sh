@@ -17,8 +17,8 @@ fi
 
 # Defalt settings
 LIMITS="1 100"
-NUM_TESTS=1      # Agora representa o valor de T (casos dentro do arquivo)
-STRESS_ROUNDS=10 # Novo: Quantas vezes o script vai rodar (Default 10)
+NUM_TESTS=1      
+STRESS_ROUNDS=1 
 NUM_PER_LINE=1
 SHOW_TIME=false
 CUSTOM_GENERATOR="" 
@@ -27,16 +27,16 @@ show_help() {
     echo "cputil: A simple tool to test your problems solutions"
     echo "Usage: cputil [options] <test-solution> <bruteforce-solution>"
     echo "Options:"
-    echo "  -h          Show this help message"
-    echo "  -g <file>   Use a custom generator file (overrides internal generator)"
-    echo "  -l          Define limits of the generated values (e.g. \"1 100\")"
-    echo "  -t <num>    Set the number of test cases (T inside the file)"
-    echo "  -r <num>    Set the number of stress rounds (How many times to run)"
-    echo "  -i <num>    Set how many numbers will be generated per line [default = 1]"
-    echo "  -s          Show time taken to run both solutions"
+    echo "  -h               Show this help message"
+    echo "  -g <file>        Use a custom generator file (overrides internal generator)"
+    echo "  -l <num> <num>   Define limits of the generated values (e.g. \"1 100\")"
+    echo "  -t <num>         Set the number of test cases (T inside the file)"
+    echo "  -r <num>         Set the number of stress rounds (How many times to run)"
+    echo "  -i <num>         Set how many numbers will be generated per line [default = 1]"
+    echo "  -s               Show time taken to run both solutions"
     echo ""
     echo "Exemple:"
-    echo "  cputil -r 100 -t 1 -g meu_gerador.cpp main.cpp brute.cpp"
+    echo "  cputil -r 100 -t 1 -g my_generator.cpp solution.cpp brute.cpp"
     exit 0
 }
 
@@ -46,7 +46,6 @@ if [ -f "$config_file" ]; then
     source "$config_file"
 fi
 
-# Adicionado r: nas opções
 while getopts "hg:l:t:r:i:s" opt; do
     case $opt in
         h) 
@@ -105,7 +104,7 @@ if [ -n "$CUSTOM_GENERATOR" ]; then
     fi
 fi
 
-# Feedback Visual
+# Visual Feedback 
 echo "--- Final Config ---"
 echo "Solution: $SOLUTION"
 echo "Brute:    $BRUTEFORCE"
@@ -128,7 +127,7 @@ compile_file() {
     local source_file=$1
     local output_bin=$2
     
-    echo -n "Compilando $source_file... "
+    echo -n "Compiling $source_file... "
     
     $CXX $CXXFLAGS "$source_file" -o "$output_bin"
     
@@ -148,7 +147,6 @@ BIN_GEN="./.bin_gen"
 compile_file "$SOLUTION" "$BIN_SOL"
 compile_file "$BRUTEFORCE" "$BIN_BRUTE"
 
-# Compila o gerador se ele existir
 if [ -n "$CUSTOM_GENERATOR" ]; then
     compile_file "$CUSTOM_GENERATOR" "$BIN_GEN"
 fi
@@ -165,7 +163,7 @@ for ((i=1; i<=STRESS_ROUNDS; i++)); do
     if [ -n "$CUSTOM_GENERATOR" ]; then
         $BIN_GEN "$i" "$NUM_TESTS" "$LIMITS" "$NUM_PER_LINE" > "$IN_FILE"
     else
-        genrand-tc "$i" "$NUM_TESTS" "$LIMITS" "$NUM_PER_LINE" > "$IN_FILE"
+        "$GENERATOR" "$i" "$NUM_TESTS" "$LIMITS" "$NUM_PER_LINE" > "$IN_FILE"
     fi
 
     # Timing Start
@@ -210,6 +208,5 @@ if [ "$PASSED" = true ]; then
     echo -e "\033[0;32m[SUCCESS] Passed all $STRESS_ROUNDS rounds!\033[0m"
     rm -f "$IN_FILE" "$OUT_SOL" "$OUT_BRUTE" "$BIN_SOL" "$BIN_BRUTE" "$BIN_GEN"
 else
-    # Se falhar, limpamos apenas os binários, mantendo os arquivos de texto para debug
     rm -f "$BIN_SOL" "$BIN_BRUTE" "$BIN_GEN"
 fi
